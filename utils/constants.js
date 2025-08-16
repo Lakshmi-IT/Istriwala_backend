@@ -1,0 +1,9 @@
+export const STATUSCODE={
+    "SUCCESS":200,
+    "FAILURE":400,
+    "NOT_FOUND":404,
+    "INTERNAL_ERROR":500,
+    "UNAUTHORIZED":401,
+    "NO_DATA":204,
+    "FORBIDDEN":403,
+}

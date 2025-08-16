@@ -1,0 +1,21 @@
+# Node.js
+node_modules/
+
+dist/
+*.log
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+
+# Build files
+/build
+/.next
+/out
+
+.env
+
