@@ -112,9 +112,12 @@ export const createProductValidation = (product) => {
 export const userValidation = (user) => {
   const errorArray = [];
 
-  const { userName, email, password } = user;
+  const { userName,mobile, email, password } = user;
   if (!userName) {
     errorArray.push("User name is required");
+  }
+  if (!mobile) {
+    errorArray.push("Mobile number is required");
   }
   if (!email) {
     errorArray.push("Email is required");
