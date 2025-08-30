@@ -6,10 +6,8 @@ import jwt from "jsonwebtoken";
 import { roleType } from "../utils/roles.js";
 import { sendEmail } from "../middlewares/emailer.js";
 
-
 import Order from "../model/orders.js";
 import Cart from "../model/cart.js"; // if totalPrice is inside Cart
-
 
 export const getAllUsersWithOrders = async (req, res, next) => {
   try {
@@ -20,7 +18,9 @@ export const getAllUsersWithOrders = async (req, res, next) => {
     const formattedUsers = await Promise.all(
       users.map(async (user, index) => {
         // get all orders of this user
-        const orders = await Order.find({ userId: user._id }).populate("cartId");
+        const orders = await Order.find({ userId: user._id }).populate(
+          "cartId"
+        );
 
         const totalOrders = orders.length;
 
@@ -41,7 +41,9 @@ export const getAllUsersWithOrders = async (req, res, next) => {
           name: user.userName,
           email: user.email,
           phone: user.mobile,
-          address: `${user.hno || ""}, ${user.street || ""}, ${user.area || ""}, ${user.state || ""}, ${user.pincode || ""}`,
+          address: `${user.hno || ""}, ${user.street || ""}, ${
+            user.area || ""
+          }, ${user.state || ""}, ${user.pincode || ""}`,
           totalOrders,
           totalSpent: `₹${totalSpent}`,
           lastOrder,
@@ -61,7 +63,7 @@ export const getAllUsersWithOrders = async (req, res, next) => {
 export const createUser = async (req, res, next) => {
   try {
     const { userName, mobile, email, password } = req.body;
-    console.log(req.body,"req.body")
+    console.log(req.body, "req.body");
 
     const validationError = userValidation(req.body);
     if (userValidation.errorArray) {
@@ -91,6 +93,8 @@ export const createUser = async (req, res, next) => {
       address: req.body.address || "",
       state: req.body.state || "",
       pincode: req.body.pincode || "",
+      lat: req.body.lat || 0,
+      lng: req.body.lng || 0,
       forgotOtp: req.body.forgotOtp || "",
     });
 
@@ -113,7 +117,6 @@ export const createUser = async (req, res, next) => {
     next(error);
   }
 };
-
 
 export const userLogin = async (req, res, next) => {
   try {
@@ -181,8 +184,7 @@ export const updateUser = async (req, res, next) => {
 
     const updateData = req.body;
 
-    console.log(req.body,"req.body")
-
+    console.log(req.body, "req.body");
 
     const user = await User.findByIdAndUpdate(
       userId,

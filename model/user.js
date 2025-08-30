@@ -9,12 +9,14 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true },
 
     // Address details
-    hno: { type: String },       // House / Door Number
+    hno: { type: String }, // House / Door Number
     street: { type: String },
     area: { type: String },
-    address: { type: String },   // Full Address or Landmark
+    address: { type: String }, // Full Address or Landmark
     state: { type: String },
     pincode: { type: String },
+    lat: { type: Number },
+    lng: { type: Number },
 
     // For password reset
     forgotOtp: { type: String },

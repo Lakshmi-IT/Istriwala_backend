@@ -150,3 +150,22 @@ export const userLoginValidation = (user) => {
     return { errorArray: false, errors: [] };
   }
 };
+
+
+export const employyeeLogin = (user) => {
+  const errorArray = [];
+
+  const { email, password } = user;
+  if (!email) {
+    errorArray.push("Email is required");
+  }
+  if (!password) {
+    errorArray.push("Password is required");
+  }
+
+  if (errorArray.length > 0) {
+    return { errorArray: true, errorArrays: errorArray };
+  } else {
+    return { errorArray: false, errors: [] };
+  }
+};

@@ -18,8 +18,9 @@ export const protect = (req, res, next) => {
         .json({ error: "Please login again" });
     }
     console.log(decoded, "decoded");
-    req.user = { userId: decoded.userId, roleType: decoded.roleType };
+    req.user = { userId: decoded.userId || decoded.employeeId, roleType: decoded.roleType };
     req.admin = decoded.userId;
+    req.employee=decoded.userId;
     req.role = decoded.roleType;
     next();
   } catch (err) {

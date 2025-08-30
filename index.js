@@ -12,8 +12,11 @@ import orderRoutes from "./routes/orderRoutes.js";
 
 import cartRoutes from "./routes/cartRoutes.js";
 
+import employeeRoutes from "./routes/employeeRoutes.js"
+
 import { protect } from "./middlewares/authMiddleware.js";
 import cors from "cors";
+import { ensureAdminExists } from "./controller/adminController.js";
 
 
 dotenv.config();
@@ -24,10 +27,13 @@ app.use(cors());
 app.use(express.json());
 
 
+ensureAdminExists()
+
 
 app.get("/", (req, res) => {
   res.send("Backend Server is working");
 });
+
 
 app.use("/api/admin", authRoutes);
 
@@ -40,6 +46,8 @@ app.use("/api/user", userRoutes);
 app.use("/api/products", productRoutes);
 
 app.use("/api/orders", orderRoutes);
+
+app.use("/api/employee", employeeRoutes);
 
 const PORT = process.env.PORT || 5000;
 

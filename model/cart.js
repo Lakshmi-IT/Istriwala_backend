@@ -5,7 +5,6 @@ const cartItemSchema = new mongoose.Schema({
   category: { type: String, required: true },
   price: { type: Number, required: true },
   qty: { type: Number, required: true, default: 1 },
- 
 });
 
 const cartSchema = new mongoose.Schema(
@@ -17,7 +16,7 @@ const cartSchema = new mongoose.Schema(
     },
     items: [cartItemSchema],
     totalPrice: { type: Number, required: true },
-     isActive: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
