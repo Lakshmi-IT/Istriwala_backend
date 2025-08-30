@@ -450,7 +450,10 @@ export const getEmployeeOrders = async (req, res) => {
       orderStatus: order.orderStatus,
       customer: order.userId?.userName || "N/A",
       phone: order.userId?.mobile || "N/A",
-      service: order.cartId?.items.map((i) => i.item).join(", ") || "N/A",
+      // service: order.cartId?.items.map((i) => i.item).join(", ") || "N/A",
+      service:
+        order.cartId?.items.map((i) => `${i.item} x ${i.qty}`).join(", ") ||
+        "N/A",
 
       qty: order.cartId?.items.map((i) => i.qty) || 0,
       items: order.cartId?.items?.length || 0,
@@ -577,7 +580,10 @@ export const getAllOrders = async (req, res) => {
       orderStatus: order.orderStatus,
       customer: order.userId?.userName || "N/A",
       phone: order.userId?.mobile || "N/A",
-      service: order.cartId?.items.map((i) => i.item).join(", ") || "N/A",
+      // service: order.cartId?.items.map((i) => i.item).join(", ") || "N/A",
+      service:
+        order.cartId?.items.map((i) => `${i.item} x ${i.qty}`).join(", ") ||
+        "N/A",
       pickedAt: order.pickedAt,
       deliveredAt: order.deliveredAt,
 
