@@ -17,6 +17,7 @@ import employeeRoutes from "./routes/employeeRoutes.js"
 import { protect } from "./middlewares/authMiddleware.js";
 import cors from "cors";
 import { ensureAdminExists } from "./controller/adminController.js";
+import path from "path"; // <-- make sure this line exists
 
 
 dotenv.config();
@@ -33,6 +34,8 @@ ensureAdminExists()
 app.get("/", (req, res) => {
   res.send("Backend Server is working");
 });
+app.use("/uploads", express.static(path.join("uploads")));
+
 
 
 app.use("/api/admin", authRoutes);
