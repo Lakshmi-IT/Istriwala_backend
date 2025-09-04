@@ -10,13 +10,13 @@ import { protect } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/add", protect, addToCart);
-router.get("/", protect, getCart);
+router.post("/add/:mobile", addToCart);
+router.get("/:mobile", getCart);
 router.delete("/clear", protect, clearCart);
 
 // New endpoints
-router.patch("/update-item", protect, updateCartItem);
-router.delete("/remove-item", protect, removeCartItem); 
+router.patch("/update-item/:mobile", updateCartItem);
+router.delete("/remove-item/:mobile", removeCartItem); 
 
 
 export default router;

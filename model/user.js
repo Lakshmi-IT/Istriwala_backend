@@ -3,10 +3,10 @@ import mongoose from "mongoose";
 const userSchema = new mongoose.Schema(
   {
     userName: { type: String, required: true },
-    mobile: { type: String, required: true },
-    alternativeMobile: { type: String },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    mobile: { type: String, required: true , unique: true},
+    // alternativeMobile: { type: String },
+    // email: { type: String, required: true, unique: true },
+    // password: { type: String, required: true },
 
     // Address details
     hno: { type: String }, // House / Door Number

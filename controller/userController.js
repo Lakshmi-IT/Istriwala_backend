@@ -60,59 +60,116 @@ export const getAllUsersWithOrders = async (req, res, next) => {
   }
 };
 
+// export const createUser = async (req, res, next) => {
+//   try {
+//     const { userName, mobile, email } = req.body;
+//     console.log(req.body, "req.body");
+
+//     const validationError = userValidation(req.body);
+//     if (userValidation.errorArray) {
+//       return res
+//         .status(STATUSCODE.FAILURE)
+//         .json({ message: validationError.errorArray[0] });
+//     }
+
+//     const userExists = await User.findOne({ email });
+//     if (userExists) {
+//       return res
+//         .status(STATUSCODE.FAILURE)
+//         .json({ message: "user already exists" });
+//     }
+
+//     // const hashedPassword = await bcrypt.hash(password || "", 10);
+
+//     const user = await User.create({
+//       userName: req.body.userName || "",
+//       mobile: req.body.mobile || "",
+//       alternativeMobile: req.body.alternativeMobile || "",
+//       email: req.body.email || "",
+//       hno: req.body.hno || "",
+//       street: req.body.street || "",
+//       area: req.body.area || "",
+//       address: req.body.address || "",
+//       state: req.body.state || "",
+//       pincode: req.body.pincode || "",
+//       lat: req.body.lat || 0,
+//       lng: req.body.lng || 0,
+//       forgotOtp: req.body.forgotOtp || "",
+//     });
+
+//     if (!user) {
+//       return res
+//         .status(STATUSCODE.FAILURE)
+//         .json({ message: "user not created" });
+//     }
+
+//     // const token = jwt.sign(
+//     //   { userId: user._id, roleType: roleType.USER },
+//     //   process.env.JWT_SECRET,
+//     //   { expiresIn: "7d" }
+//     // );
+
+//     res
+//       .status(STATUSCODE.SUCCESS)
+//       .json({ user, message: "user created successfully" });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
 export const createUser = async (req, res, next) => {
   try {
-    const { userName, mobile, email, password } = req.body;
-    console.log(req.body, "req.body");
+    const { mobile } = req.body;
+    if (!mobile) {
+      return res
+        .status(STATUSCODE.FAILURE)
+        .json({ message: "mobile is required" });
+    }
 
+    // validate
     const validationError = userValidation(req.body);
-    if (userValidation.errorArray) {
+    if (validationError.errorArray?.length > 0) {
       return res
         .status(STATUSCODE.FAILURE)
         .json({ message: validationError.errorArray[0] });
     }
 
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res
-        .status(STATUSCODE.FAILURE)
-        .json({ message: "user already exists" });
+    // check if user exists
+    let user = await User.findOne({ mobile });
+
+    if (user) {
+      // update existing user
+      user = await User.findOneAndUpdate(
+        { mobile },
+        { $set: req.body },
+        { new: true }
+      );
+
+      return res.status(STATUSCODE.SUCCESS).json({
+        user,
+        message: "User updated successfully",
+      });
+    } else {
+      // create new user
+      user = await User.create({
+        userName: req.body.userName || "",
+        mobile: req.body.mobile || "",
+        hno: req.body.hno || "",
+        street: req.body.street || "",
+        area: req.body.area || "",
+        address: req.body.address || "",
+        state: req.body.state || "",
+        pincode: req.body.pincode || "",
+        lat: req.body.lat || 0,
+        lng: req.body.lng || 0,
+        forgotOtp: req.body.forgotOtp || "",
+      });
+
+      return res.status(STATUSCODE.SUCCESS).json({
+        user,
+        message: "User created successfully",
+      });
     }
-
-    const hashedPassword = await bcrypt.hash(password || "", 10);
-
-    const user = await User.create({
-      userName: userName || "",
-      mobile: mobile || "",
-      alternativeMobile: req.body.alternativeMobile || "",
-      email: email || "",
-      password: hashedPassword || "",
-      hno: req.body.hno || "",
-      street: req.body.street || "",
-      area: req.body.area || "",
-      address: req.body.address || "",
-      state: req.body.state || "",
-      pincode: req.body.pincode || "",
-      lat: req.body.lat || 0,
-      lng: req.body.lng || 0,
-      forgotOtp: req.body.forgotOtp || "",
-    });
-
-    if (!user) {
-      return res
-        .status(STATUSCODE.FAILURE)
-        .json({ message: "user not created" });
-    }
-
-    const token = jwt.sign(
-      { userId: user._id, roleType: roleType.USER },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    res
-      .status(STATUSCODE.SUCCESS)
-      .json({ token, message: "user created successfully" });
   } catch (error) {
     next(error);
   }
@@ -162,17 +219,17 @@ export const userLogin = async (req, res, next) => {
 
 export const getUser = async (req, res, next) => {
   try {
-    const userId = req.user.userId; // ✅ now available
-
-    const user = await User.findById(userId).select("-password -forgotOtp");
+    const { mobile } = req.params;
+    const user = await User.findOne({ mobile });
 
     if (!user) {
       return res.status(STATUSCODE.FAILURE).json({ message: "User not found" });
     }
 
-    res
-      .status(STATUSCODE.SUCCESS)
-      .json({ message: "User fetched successfully", user });
+    res.status(STATUSCODE.SUCCESS).json({
+      message: "User fetched successfully",
+      user,
+    });
   } catch (error) {
     next(error);
   }
@@ -180,14 +237,11 @@ export const getUser = async (req, res, next) => {
 
 export const updateUser = async (req, res, next) => {
   try {
-    const userId = req.user.userId;
-
+    const { email } = req.params;
     const updateData = req.body;
 
-    console.log(req.body, "req.body");
-
-    const user = await User.findByIdAndUpdate(
-      userId,
+    const user = await User.findOneAndUpdate(
+      { email }, // 👈 match by email
       { $set: updateData },
       { new: true }
     );

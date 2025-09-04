@@ -39,6 +39,8 @@ const OrderSchema = new mongoose.Schema({
   orderId: { type: String, unique: true }, // custom sequential ID
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   cartId: { type: mongoose.Schema.Types.ObjectId, ref: "Cart", required: true },
+  pickupId: { type: String, unique: true }, // custom sequential ID
+  deliveryId: { type: String, unique: true }, // custom sequential ID
 
   paymentMethod: { type: String, enum: ["COD", "RAZORPAY"], required: true },
   paymentId: { type: String }, // Razorpay paymentId (if online)
@@ -93,6 +95,18 @@ OrderSchema.pre("save", async function (next) {
       { $inc: { seq: 1 } },
       { new: true, upsert: true }
     );
+
+    const uniqueSeq = counter.seq.toString().padStart(3, "0");
+    const timePart = Date.now().toString().slice(-6); // take last 6 digits of timestamp
+
+    // pickup: base number
+    const pickupCode = parseInt(timePart);
+
+    // delivery: add a small offset so it's always different
+    const deliveryCode = pickupCode + Math.floor(Math.random() * 50 + 10); // add 10–59
+
+    this.pickupId = `${pickupCode}`;
+    this.deliveryId = `${deliveryCode}`;
 
     this.orderId = `ORD-${counter.seq.toString().padStart(3, "0")}`;
   }

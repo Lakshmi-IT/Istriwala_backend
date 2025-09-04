@@ -20,7 +20,6 @@
 
 // export default router;
 
-
 import express from "express";
 import {
   createPaymentOrder,
@@ -35,6 +34,7 @@ import {
   updateDelivery,
   // updateLocation,
   getEmployeeOrders,
+  verifyCode,
 } from "../controller/orderController.js";
 
 import { protect } from "../middlewares/authMiddleware.js";
@@ -45,11 +45,13 @@ const router = express.Router();
 
 /* ---------------- USER ROUTES ---------------- */
 router.post("/payment/order", protect, createPaymentOrder); // Step 1: Razorpay order
-router.post("/create", protect, createOrder); // Step 2: Final order (COD or after payment)
+router.post("/create/:mobile", createOrder); // Step 2: Final order (COD or after payment)
 router.post("/verify", protect, verifyPayment); // Step 3: Verify Razorpay & create order
 
-router.get("/my-orders", protect, getUserOrders);
+router.get("/my-orders/:mobile", getUserOrders);
 router.get("/getAllOrders", getAllOrders);
+
+router.put("/employee/verifyCode",verifyCode)
 
 /* ---------------- ADMIN ROUTES ---------------- */
 // Admin assigns an order to employee
@@ -81,4 +83,3 @@ router.put(
 // router.put("/employee/location", protect, access("EMPLOYEE"), updateLocation);
 
 export default router;
-

@@ -1,4 +1,5 @@
 import Cart from "../model/cart.js";
+import User from "../model/user.js";
 
 // Add items to cart (same as before)
 // export const addToCart = async (req, res) => {
@@ -42,10 +43,16 @@ import Cart from "../model/cart.js";
 export const addToCart = async (req, res) => {
   try {
     const { item, qty, price, category } = req.body;
-    const userId = req.user.userId;
+    const { mobile } = req.params;
+    // const userId = req.user.userId;
+
+    const user = await User.findOne({ mobile });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
 
     // find an inactive cart
-    let cart = await Cart.findOne({ user: userId, isActive: false });
+    let cart = await Cart.findOne({ user: user._id, isActive: false });
 
     if (cart) {
       // if inactive cart exists → update this one
@@ -66,7 +73,7 @@ export const addToCart = async (req, res) => {
     } else {
       // if no inactive cart → create a new one
       cart = new Cart({
-        user: userId,
+        user: user._id,
         items: [{ item, category, qty, price }],
         totalPrice: qty * price,
         isActive: false, // default inactive
@@ -83,8 +90,14 @@ export const addToCart = async (req, res) => {
 // Get user cart
 export const getCart = async (req, res) => {
   try {
-    const userId = req.user.userId;
-    const cart = await Cart.findOne({ user: userId, isActive: false });
+    // const userId = req.user.userId;
+    const { mobile } = req.params;
+
+    const user = await User.findOne({ mobile });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    const cart = await Cart.findOne({ user: user._id, isActive: false });
 
     if (!cart) {
       return res.json({ items: [], totalPrice: 0 });
@@ -100,7 +113,7 @@ export const getCart = async (req, res) => {
 export const clearCart = async (req, res) => {
   try {
     const userId = req.user.userId;
-    await Cart.findOneAndDelete({ user: userId,isActive: false });
+    await Cart.findOneAndDelete({ user: userId, isActive: false });
     res.json({ message: "Cart cleared successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -109,10 +122,17 @@ export const clearCart = async (req, res) => {
 
 export const updateCartItem = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    // const userId = req.user.userId;
     const { itemId, qty } = req.body;
 
-    const cart = await Cart.findOne({ user: userId ,isActive: false});
+    const { mobile } = req.params;
+
+    const user = await User.findOne({ mobile });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const cart = await Cart.findOne({ user: user._id, isActive: false });
     if (!cart) return res.status(404).json({ error: "Cart not found" });
 
     const itemIndex = cart.items.findIndex((i) => i.item === itemId);
@@ -132,10 +152,16 @@ export const updateCartItem = async (req, res) => {
 // ✅ Remove a specific item from cart
 export const removeCartItem = async (req, res) => {
   try {
-    const userId = req.user.userId;
-    const { itemId } = req.body; 
+    // const userId = req.user.userId;
+    const { itemId } = req.body;
+    const { mobile } = req.params;
 
-    const cart = await Cart.findOne({ user: userId, isActive: false });
+    const user = await User.findOne({ mobile });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const cart = await Cart.findOne({ user: user._id, isActive: false });
     if (!cart) return res.status(404).json({ error: "Cart not found" });
 
     // Filter by subdocument _id

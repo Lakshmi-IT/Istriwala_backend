@@ -16,12 +16,12 @@ import multer from "multer";
 import axios from "axios";
 const upload = multer();
 
-router.put("/update", protect, upload.none(), updateUser);
+router.put("/update/:email", protect, upload.none(), updateUser);
 
 router.post("/register", createUser);
 router.post("/login", userLogin);
 
-router.get("/profile", protect, getUser);
+router.get("/profile/:mobile", getUser);
 // router.put("/update",protect,updateUser)
 router.post("/forgotPassword", userForgotPassword);
 

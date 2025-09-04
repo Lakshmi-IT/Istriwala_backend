@@ -1,5 +1,3 @@
-
-
 import Order from "../model/orders.js";
 import Cart from "../model/cart.js";
 import User from "../model/user.js";
@@ -8,7 +6,6 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import dotenv from "dotenv";
 dotenv.config();
-
 
 const razorpay = new Razorpay({
   key_id: process?.env?.RAZORPAY_KEY_ID,
@@ -44,13 +41,20 @@ export const createPaymentOrder = async (req, res) => {
 export const createOrder = async (req, res) => {
   try {
     const { cartId, addressId, paymentMethod } = req.body;
-    const userId = req.user.userId;
+    // const userId = req.user.userId;
+
+    const { mobile } = req.params;
+
+    const user = await User.findOne({ mobile });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
 
     if (paymentMethod === "COD") {
       await Cart.findByIdAndUpdate(cartId, { $set: { isActive: true } });
 
       const order = await Order.create({
-        userId,
+        userId: user._id,
         cartId,
         addressId,
         paymentMethod: "COD",
@@ -157,8 +161,6 @@ export const assignOrderToEmployee = async (req, res) => {
 
 // ---------------------- EMPLOYEE ACTIONS ----------------------
 
-
-
 export const getEmployeeOrders = async (req, res) => {
   try {
     const employeeId = req.user.userId; // employee logged in
@@ -191,7 +193,9 @@ export const getEmployeeOrders = async (req, res) => {
       status: order.orderStatus || "pending",
       pickupImage: order.pickupImage,
       deliveryImage: order.deliveryImage,
-      pickupAt: order.pickupAt,
+      pickedAt: order.pickedAt,
+      pickupId: order.pickupId,
+      deliveryId: order.deliveryId,
       deliveredAt: order.deliveredAt,
       lat: order?.userId?.lat || 0,
       lng: order?.userId?.lng || 0,
@@ -240,7 +244,7 @@ export const getEmployeeOrders = async (req, res) => {
 
 function getFileUrl(filePath) {
   const filename = filePath.split("\\").pop(); // Extract filename
-  return `/uploads/${filename}`; // Relative URL for frontend
+  return `/uploads${filename}`; // Relative URL for frontend
 }
 
 export const updatePickup = async (req, res) => {
@@ -273,8 +277,6 @@ export const updatePickup = async (req, res) => {
   }
 };
 
-
-
 // Update delivery (image + status)
 export const updateDelivery = async (req, res) => {
   try {
@@ -284,7 +286,7 @@ export const updateDelivery = async (req, res) => {
     const order = await Order.findById(orderId);
     if (!order) return res.status(404).json({ error: "Order not found" });
 
-     const deliveryImages = getFileUrl(deliveryImage);
+    const deliveryImages = getFileUrl(deliveryImage);
 
     order.deliveryImage = deliveryImages;
     order.orderStatus = "DELIVERED";
@@ -303,10 +305,18 @@ export const updateDelivery = async (req, res) => {
 // Get orders for logged in user
 export const getUserOrders = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const { mobile } = req.params;
+
+    const user = await User.findOne({ mobile });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    const userId = user?._id;
+
     const orders = await Order.find({ userId })
       .populate("cartId")
-      .populate("assignedEmployee", "name email mobile");
+      .populate("assignedEmployee", "name email mobile")
+      .sort({ _id: -1 });
 
     res.json({ success: true, orders });
   } catch (err) {
@@ -387,5 +397,38 @@ export const getAllOrders = async (req, res) => {
   } catch (err) {
     console.error("❌ Error fetching orders:", err);
     res.status(500).json({ error: "Failed to fetch orders" });
+  }
+};
+
+// PUT /api/orders/employee/verifyCode
+export const verifyCode = async (req, res) => {
+  try {
+    const { orderId, type, code } = req.body;
+    const order = await Order.findById(orderId);
+
+    if (!order)
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
+
+    if (type === "PICKUP" && order.pickupId === code) {
+      order.orderStatus = "PICKED_UP";
+      order.pickedAt = new Date();
+      await order.save();
+    } else if (type === "DELIVERY" && order.deliveryId === code) {
+      order.orderStatus = "DELIVERED";
+      order.deliveredAt = new Date();
+
+      if (!order.pickedAt) {
+        order.pickedAt = new Date();
+      }
+    } else {
+      return res.status(400).json({ success: false, message: "Invalid code" });
+    }
+
+    await order.save();
+    res.json({ success: true, order });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
