@@ -4,8 +4,8 @@ import jwt from "jsonwebtoken";
 import { STATUSCODE } from "../utils/constants.js";
 import { roleType } from "../utils/roles.js";
 
-const ADMIN_EMAIL = "admin@gmail.com";
-const ADMIN_PASSWORD = "admin@123";
+const ADMIN_EMAIL = "admin@istriwala.org";
+const ADMIN_PASSWORD = "ISTRIWALA@2025@LIT";
 
 // 🔹 Ensure admin exists in DB (called at server startup)
 export const ensureAdminExists = async () => {
