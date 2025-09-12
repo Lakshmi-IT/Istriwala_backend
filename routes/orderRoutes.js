@@ -35,6 +35,7 @@ import {
   // updateLocation,
   getEmployeeOrders,
   verifyCode,
+  cancelOrder,
 } from "../controller/orderController.js";
 
 import { protect } from "../middlewares/authMiddleware.js";
@@ -78,6 +79,8 @@ router.put(
   upload.single("deliveryImage"),
   updateDelivery
 );
+
+router.patch("/cancel/:orderId", cancelOrder);
 
 // Employee updates live location
 // router.put("/employee/location", protect, access("EMPLOYEE"), updateLocation);

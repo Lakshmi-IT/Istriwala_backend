@@ -1,8 +1,8 @@
 import express from "express";
 import {
   createUser,
-  userLogin,
-  userForgotPassword,
+  // userLogin,
+  // userForgotPassword,
   updateUser,
   getUser,
   getAllUsersWithOrders,
@@ -16,14 +16,14 @@ import multer from "multer";
 import axios from "axios";
 const upload = multer();
 
-router.put("/update/:email", protect, upload.none(), updateUser);
+router.put("/update/:mobile", protect, upload.none(), updateUser);
 
 router.post("/register", createUser);
-router.post("/login", userLogin);
+// router.post("/login", userLogin);
 
 router.get("/profile/:mobile", getUser);
 // router.put("/update",protect,updateUser)
-router.post("/forgotPassword", userForgotPassword);
+// router.post("/forgotPassword", userForgotPassword);
 
 router.get("/getAllUsersWithOrders", getAllUsersWithOrders);
 

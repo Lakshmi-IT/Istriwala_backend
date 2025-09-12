@@ -12,7 +12,7 @@ import Cart from "../model/cart.js"; // if totalPrice is inside Cart
 export const getAllUsersWithOrders = async (req, res, next) => {
   try {
     // fetch all users
-    const users = await User.find().select("-password -forgotOtp");
+    const users = await User.find();
 
     // format each user with extra details
     const formattedUsers = await Promise.all(
@@ -39,7 +39,7 @@ export const getAllUsersWithOrders = async (req, res, next) => {
         return {
           id: `USR-${(index + 1).toString().padStart(3, "0")}`, // custom ID
           name: user.userName,
-          email: user.email,
+          // email: user.email,
           phone: user.mobile,
           address: `${user.hno || ""}, ${user.street || ""}, ${
             user.area || ""
@@ -175,47 +175,47 @@ export const createUser = async (req, res, next) => {
   }
 };
 
-export const userLogin = async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
+// export const userLogin = async (req, res, next) => {
+//   try {
+//     const { email, password } = req.body;
 
-    const validationError = userLoginValidation(req.body);
+//     const validationError = userLoginValidation(req.body);
 
-    if (validationError.errorArray) {
-      return res
-        .status(STATUSCODE.FAILURE)
-        .json({ message: validationError.errorArray[0] });
-    }
+//     if (validationError.errorArray) {
+//       return res
+//         .status(STATUSCODE.FAILURE)
+//         .json({ message: validationError.errorArray[0] });
+//     }
 
-    const userExists = await User.findOne({ email });
-    if (!userExists) {
-      return res.status(STATUSCODE.FAILURE).json({ message: "user not found" });
-    }
+//     const userExists = await User.findOne({ email });
+//     if (!userExists) {
+//       return res.status(STATUSCODE.FAILURE).json({ message: "user not found" });
+//     }
 
-    const isMatch = await bcrypt.compare(password, userExists.password);
-    if (!isMatch) {
-      return res
-        .status(STATUSCODE.FAILURE)
-        .json({ message: "Incorrect Password" });
-    }
+//     const isMatch = await bcrypt.compare(password, userExists.password);
+//     if (!isMatch) {
+//       return res
+//         .status(STATUSCODE.FAILURE)
+//         .json({ message: "Incorrect Password" });
+//     }
 
-    const token = jwt.sign(
-      { userId: userExists._id, roleType: roleType.USER },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-    if (!token) {
-      return res
-        .status(STATUSCODE.FAILURE)
-        .json({ message: "token not created" });
-    }
-    res
-      .status(STATUSCODE.SUCCESS)
-      .json({ token, message: "user logged in successfully" });
-  } catch (error) {
-    next(error);
-  }
-};
+//     const token = jwt.sign(
+//       { userId: userExists._id, roleType: roleType.USER },
+//       process.env.JWT_SECRET,
+//       { expiresIn: "7d" }
+//     );
+//     if (!token) {
+//       return res
+//         .status(STATUSCODE.FAILURE)
+//         .json({ message: "token not created" });
+//     }
+//     res
+//       .status(STATUSCODE.SUCCESS)
+//       .json({ token, message: "user logged in successfully" });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
 export const getUser = async (req, res, next) => {
   try {
@@ -237,11 +237,11 @@ export const getUser = async (req, res, next) => {
 
 export const updateUser = async (req, res, next) => {
   try {
-    const { email } = req.params;
+    const { mobile } = req.params;
     const updateData = req.body;
 
     const user = await User.findOneAndUpdate(
-      { email }, // 👈 match by email
+      { mobile }, // 👈 match by mobile
       { $set: updateData },
       { new: true }
     );
@@ -258,64 +258,64 @@ export const updateUser = async (req, res, next) => {
   }
 };
 
-export const userForgotPassword = async (req, res, next) => {
-  try {
-    const { email, password, conformPassword } = req.body;
+// export const userForgotPassword = async (req, res, next) => {
+//   try {
+//     const { email, password, conformPassword } = req.body;
 
-    const userExists = await User.findOne({ email });
-    if (!userExists) {
-      return res.status(STATUSCODE.FAILURE).json({ message: "user not found" });
-    }
+//     const userExists = await User.findOne({ email });
+//     if (!userExists) {
+//       return res.status(STATUSCODE.FAILURE).json({ message: "user not found" });
+//     }
 
-    const generateOtp = Math.floor(1000 + Math.random() * 9000);
+//     const generateOtp = Math.floor(1000 + Math.random() * 9000);
 
-    // prepare email
-    const subject = "Your OTP Code";
-    const message = `Hi ${
-      userExists.userName || "User"
-    },\n\nYour OTP code is: ${generateOtp}\nIt will expire in 10 minutes.\n\nThanks,\n`;
+//     // prepare email
+//     const subject = "Your OTP Code";
+//     const message = `Hi ${
+//       userExists.userName || "User"
+//     },\n\nYour OTP code is: ${generateOtp}\nIt will expire in 10 minutes.\n\nThanks,\n`;
 
-    const emailSent = await sendEmail(email, subject, message);
+//     const emailSent = await sendEmail(email, subject, message);
 
-    if (!emailSent) {
-      return res
-        .status(STATUSCODE.FAILURE)
-        .json({ message: "Failed to send OTP" });
-    }
+//     if (!emailSent) {
+//       return res
+//         .status(STATUSCODE.FAILURE)
+//         .json({ message: "Failed to send OTP" });
+//     }
 
-    // optionally save OTP in DB or cache here
+//     // optionally save OTP in DB or cache here
 
-    const otp = await User.findOneAndUpdate(
-      { email },
-      { forgotOtp: generateOtp },
-      { new: true }
-    );
-    if (!otp) {
-      return res
-        .status(STATUSCODE.FAILURE)
-        .json({ message: "OTP not created" });
-    }
+//     const otp = await User.findOneAndUpdate(
+//       { email },
+//       { forgotOtp: generateOtp },
+//       { new: true }
+//     );
+//     if (!otp) {
+//       return res
+//         .status(STATUSCODE.FAILURE)
+//         .json({ message: "OTP not created" });
+//     }
 
-    return res
-      .status(STATUSCODE.SUCCESS)
-      .json({ message: "OTP sent to email" });
+//     return res
+//       .status(STATUSCODE.SUCCESS)
+//       .json({ message: "OTP sent to email" });
 
-    // if(password!==conformPassword){
-    //     return res.status(STATUSCODE.FAILURE).json({message:"Password does not match"});
-    // }
+//     // if(password!==conformPassword){
+//     //     return res.status(STATUSCODE.FAILURE).json({message:"Password does not match"});
+//     // }
 
-    // const hashedPassword=await bcrypt.hash(password,10);
-    // const user=await User.findOneAndUpdate({email},{password:hashedPassword},{new:true});
-    // if(!user){
-    //     return res.status(STATUSCODE.FAILURE).json({message:"user not updated"});
-    // }
+//     // const hashedPassword=await bcrypt.hash(password,10);
+//     // const user=await User.findOneAndUpdate({email},{password:hashedPassword},{new:true});
+//     // if(!user){
+//     //     return res.status(STATUSCODE.FAILURE).json({message:"user not updated"});
+//     // }
 
-    // const token=jwt.sign({userId:user._id,roleType:roleType.USER},process.env.JWT_SECRET,{expiresIn:"7d"});
-    // if(!token){
-    //     return res.status(STATUSCODE.FAILURE).json({message:"token not created"});
-    // }
-    // res.status(STATUSCODE.SUCCESS).json({token,message:"Password changed successfully"});
-  } catch (error) {
-    next(error);
-  }
-};
+//     // const token=jwt.sign({userId:user._id,roleType:roleType.USER},process.env.JWT_SECRET,{expiresIn:"7d"});
+//     // if(!token){
+//     //     return res.status(STATUSCODE.FAILURE).json({message:"token not created"});
+//     // }
+//     // res.status(STATUSCODE.SUCCESS).json({token,message:"Password changed successfully"});
+//   } catch (error) {
+//     next(error);
+//   }
+// };

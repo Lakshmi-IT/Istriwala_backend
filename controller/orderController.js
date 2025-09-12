@@ -432,3 +432,26 @@ export const verifyCode = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const cancelOrder = async (req, res) => {
+  const { orderId } = req.params;
+  console.log(orderId,"cancel orderId")
+
+  try {
+    const order = await Order.findOne({_id: orderId });
+    console.log(order,"order")
+    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    if (order.orderStatus !== "PENDING") {
+      return res.status(400).json({ message: "Only pending orders can be cancelled" });
+    }
+
+    order.orderStatus = "CANCELLED";
+    await order.save();
+
+    return res.status(200).json({ message: "Order cancelled successfully", order });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
