@@ -318,7 +318,11 @@ export const getUserOrders = async (req, res) => {
       .populate("assignedEmployee", "name email mobile")
       .sort({ _id: -1 });
 
-    res.json({ success: true, orders });
+    const totalAmount = orders
+      .filter((order) => order.orderStatus !== "CANCELLED") // exclude cancelled
+      .reduce((sum, order) => sum + (order.cartId?.totalPrice || 0), 0);
+
+    res.json({ success: true, orders, totalAmount });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch orders" });
@@ -435,21 +439,25 @@ export const verifyCode = async (req, res) => {
 
 export const cancelOrder = async (req, res) => {
   const { orderId } = req.params;
-  console.log(orderId,"cancel orderId")
+  console.log(orderId, "cancel orderId");
 
   try {
-    const order = await Order.findOne({_id: orderId });
-    console.log(order,"order")
+    const order = await Order.findOne({ _id: orderId });
+    console.log(order, "order");
     if (!order) return res.status(404).json({ message: "Order not found" });
 
     if (order.orderStatus !== "PENDING") {
-      return res.status(400).json({ message: "Only pending orders can be cancelled" });
+      return res
+        .status(400)
+        .json({ message: "Only pending orders can be cancelled" });
     }
 
     order.orderStatus = "CANCELLED";
     await order.save();
 
-    return res.status(200).json({ message: "Order cancelled successfully", order });
+    return res
+      .status(200)
+      .json({ message: "Order cancelled successfully", order });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Server error" });

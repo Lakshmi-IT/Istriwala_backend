@@ -119,11 +119,33 @@ export const getAllUsersWithOrders = async (req, res, next) => {
 
 export const createUser = async (req, res, next) => {
   try {
-    const { mobile } = req.body;
+    const { mobile,pincode } = req.body;
     if (!mobile) {
       return res
         .status(STATUSCODE.FAILURE)
         .json({ message: "mobile is required" });
+    }
+
+     const allowedPincodes = [
+      "520008",
+      "520010",
+      "520007",
+      "521137",
+      "521108",
+      "520004",
+      "520013",
+      "520011",
+      "522501",
+      "522503",
+      "530015",
+      "520003",
+    ];
+
+    // ✅ Check if pincode is valid
+    if (!allowedPincodes.includes(String(pincode))) {
+      return res
+        .status(STATUSCODE.FAILURE)
+        .json({ message: "We are not providing services to your location." });
     }
 
     // validate
